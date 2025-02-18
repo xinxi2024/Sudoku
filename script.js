@@ -6,6 +6,7 @@ class SudokuGame {
         this.startTime = null;
         this.selectedCell = null;
         this.difficulty = 'easy';
+        this.highlightMode = false;
         this.achievements = {
             'easy': { time: 300, title: '新手入门' },
             'medium': { time: 600, title: '中级玩家' },
@@ -36,12 +37,47 @@ class SudokuGame {
             }
         }
     }
+    handleCellClick(cell) {
+        if (this.selectedCell) {
+            this.selectedCell.classList.remove('selected');
+            // 移除之前的高亮
+            if (this.highlightMode) {
+                this.removeHighlightFromCells();
+            }
+        }
+        
+        this.selectedCell = cell;
+        cell.classList.add('selected');
+
+        // 高亮相同数字
+        if (this.highlightMode && cell.textContent) {
+            this.highlightSameNumbers(cell.textContent);
+        }
+    }
 
     setupEventListeners() {
         // 棋盘单元格点击事件
         document.querySelector('.sudoku-board').addEventListener('click', (e) => {
             if (e.target.classList.contains('cell')) {
                 this.handleCellClick(e.target);
+            }
+        });
+
+        // 添加鼠标悬浮事件
+        document.querySelector('.sudoku-board').addEventListener('mouseover', (e) => {
+            if (e.target.classList.contains('cell') && e.target.textContent && this.highlightMode) {
+                this.removeHighlightFromCells();
+                this.highlightSameNumbers(e.target.textContent);
+            }
+        });
+
+        document.querySelector('.sudoku-board').addEventListener('mouseout', (e) => {
+            if (e.target.classList.contains('cell') && this.highlightMode) {
+                this.removeHighlightFromCells();
+                // 如果有选中的单元格，恢复其高亮
+                if (this.selectedCell && this.selectedCell.textContent) {
+                    this.highlightSameNumbers(this.selectedCell.textContent);
+                }
             }
         });
 
@@ -67,6 +103,11 @@ class SudokuGame {
         // 主题切换事件
         document.getElementById('theme-select').addEventListener('change', (e) => {
             this.changeTheme(e.target.value);
+        });
+
+        // 高亮模式切换事件
+        document.getElementById('toggle-highlight').addEventListener('click', () => {
+            this.toggleHighlightMode();
         });
     }
 
@@ -146,16 +187,34 @@ class SudokuGame {
         
         return true;
     }
+    toggleHighlightMode() {
+        this.highlightMode = !this.highlightMode;
+        const button = document.getElementById('toggle-highlight');
+        button.textContent = `高亮模式: ${this.highlightMode ? '开启' : '关闭'}`;
 
-    handleCellClick(cell) {
-        if (cell.classList.contains('fixed')) return;
-        
-        if (this.selectedCell) {
-            this.selectedCell.classList.remove('selected');
+        // 如果当前有选中的单元格，更新高亮状态
+        if (this.selectedCell && this.selectedCell.textContent) {
+            if (this.highlightMode) {
+                this.highlightSameNumbers(this.selectedCell.textContent);
+            } else {
+                this.removeHighlightFromCells();
+            }
         }
-        
-        this.selectedCell = cell;
-        cell.classList.add('selected');
+    }
+
+    highlightSameNumbers(number) {
+        this.removeHighlightFromCells();
+        document.querySelectorAll('.cell').forEach(cell => {
+            if (cell.textContent === number) {
+                cell.classList.add('highlight-same');
+            }
+        });
+    }
+
+    removeHighlightFromCells() {
+        document.querySelectorAll('.cell').forEach(cell => {
+            cell.classList.remove('highlight-same');
+        });
     }
 
     fillNumber(number) {
@@ -168,6 +227,9 @@ class SudokuGame {
             this.board[row][col] = 0;
             this.selectedCell.textContent = '';
             this.selectedCell.classList.remove('error');
+            if (this.highlightMode) {
+                this.removeHighlightFromCells();
+            }
         } else {
             this.board[row][col] = number;
             this.selectedCell.textContent = number;
@@ -182,6 +244,11 @@ class SudokuGame {
                 if (this.checkWin()) {
                     this.handleWin();
                 }
+            }
+
+            // 如果高亮模式开启，高亮相同数字
+            if (this.highlightMode) {
+                this.highlightSameNumbers(number.toString());
             }
         }
     }
@@ -295,3 +362,4 @@ class SudokuGame {
 window.addEventListener('DOMContentLoaded', () => {
     new SudokuGame();
 });
+

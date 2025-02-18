@@ -111,6 +111,10 @@ button:hover {
     background-color: #ffebee;
 }
 
+.cell.highlight-same {
+    background-color: #fff3e0;
+}
+
 .number-pad {
     display: grid;
     grid-template-columns: repeat(5, 1fr);

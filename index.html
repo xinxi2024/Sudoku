@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数独游戏</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="game-container">
+        <header>
+            <h1>数独游戏</h1>
+            <div class="theme-switcher">
+                <label for="theme-select">选择主题：</label>
+                <select id="theme-select">
+                    <option value="classic">经典主题</option>
+                    <option value="dark">暗黑主题</option>
+                    <option value="colorful">彩色主题</option>
+                </select>
+            </div>
+        </header>
+
+        <div class="game-controls">
+            <div class="difficulty-selector">
+                <label for="difficulty">难度：</label>
+                <select id="difficulty">
+                    <option value="easy">简单</option>
+                    <option value="medium">中等</option>
+                    <option value="hard">困难</option>
+                </select>
+            </div>
+            <button id="new-game">新游戏</button>
+            <button id="show-solution">显示答案</button>
+            <button id="save-game">保存游戏</button>
+            <button id="load-game">加载游戏</button>
+        </div>
+
+        <div class="game-info">
+            <div class="timer">时间：<span id="time">00:00</span></div>
+            <div class="achievements">
+                <span>成就：</span>
+                <span id="current-achievement">新手入门</span>
+            </div>
+        </div>
+
+        <div class="sudoku-board">
+            <!-- 9x9的数独棋盘将通过JavaScript动态生成 -->
+        </div>
+
+        <div class="number-pad">
+            <button class="number" data-number="1">1</button>
+            <button class="number" data-number="2">2</button>
+            <button class="number" data-number="3">3</button>
+            <button class="number" data-number="4">4</button>
+            <button class="number" data-number="5">5</button>
+            <button class="number" data-number="6">6</button>
+            <button class="number" data-number="7">7</button>
+            <button class="number" data-number="8">8</button>
+            <button class="number" data-number="9">9</button>
+            <button class="number" data-number="0">清除</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

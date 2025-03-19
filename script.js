@@ -127,13 +127,38 @@ class SudokuGame {
     }
 
     generateSolution() {
+        // 先清空解决方案
+        for (let i = 0; i < 9; i++) {
+            for (let j = 0; j < 9; j++) {
+                this.solution[i][j] = 0;
+            }
+        }
+
+        // 随机填充一些初始数字作为种子
+        // 通过随机填充几个数字作为起点，可以增加每次生成解的多样性
+        const seedCount = Math.floor(Math.random() * 5) + 3; // 随机填充3-7个数字
+        for (let i = 0; i < seedCount; i++) {
+            const row = Math.floor(Math.random() * 9);
+            const col = Math.floor(Math.random() * 9);
+            const num = Math.floor(Math.random() * 9) + 1;
+            
+            // 只有在当前位置是有效的情况下才填充
+            if (this.solution[row][col] === 0 && this.isValidMove(this.solution, row, col, num)) {
+                this.solution[row][col] = num;
+            }
+        }
+        
         const fillGrid = (grid) => {
             for (let i = 0; i < 81; i++) {
                 const row = Math.floor(i / 9);
                 const col = i % 9;
                 
                 if (grid[row][col] === 0) {
-                    for (let num = 1; num <= 9; num++) {
+                    // 随机化数字排列顺序，增加生成的随机性
+                    const nums = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+                    this.shuffleArray(nums);
+                    
+                    for (let num of nums) {
                         if (this.isValidMove(grid, row, col, num)) {
                             grid[row][col] = num;
                             
@@ -153,14 +178,85 @@ class SudokuGame {
         fillGrid(this.solution);
     }
 
+    // 辅助方法：随机打乱数组
+    shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
     removeNumbers(count) {
-        const positions = Array.from({length: 81}, (_, i) => i);
-        for (let i = 0; i < count; i++) {
-            const index = Math.floor(Math.random() * positions.length);
-            const position = positions.splice(index, 1)[0];
+        // 根据难度调整移除模式
+        let positions = Array.from({length: 81}, (_, i) => i);
+        this.shuffleArray(positions); // 随机打乱位置数组
+        
+        // 设置不同难度的移除策略
+        let minDigitsPerRegion = 0;
+        
+        switch(this.difficulty) {
+            case 'easy':
+                minDigitsPerRegion = 3; // 每个3x3区域至少保留3个数字
+                break;
+            case 'medium':
+                minDigitsPerRegion = 2; // 每个3x3区域至少保留2个数字
+                break;
+            case 'hard':
+                minDigitsPerRegion = 1; // 每个3x3区域至少保留1个数字
+                break;
+        }
+        
+        // 计算每个区域当前的数字数量
+        const getRegionDigits = () => {
+            const regions = Array(9).fill(0);
+            for (let i = 0; i < 9; i++) {
+                for (let j = 0; j < 9; j++) {
+                    if (this.board[i][j] !== 0) {
+                        const regionIndex = Math.floor(i / 3) * 3 + Math.floor(j / 3);
+                        regions[regionIndex]++;
+                    }
+                }
+            }
+            return regions;
+        };
+        
+        // 移除数字，但确保每个区域保留足够的数字
+        let removed = 0;
+        for (let i = 0; i < positions.length && removed < count; i++) {
+            const position = positions[i];
             const row = Math.floor(position / 9);
             const col = position % 9;
-            this.board[row][col] = 0;
+            
+            // 计算该位置所在的区域
+            const regionIndex = Math.floor(row / 3) * 3 + Math.floor(col / 3);
+            
+            // 如果该区域的数字数量足够，可以移除
+            const regionDigits = getRegionDigits();
+            if (regionDigits[regionIndex] > minDigitsPerRegion && this.board[row][col] !== 0) {
+                this.board[row][col] = 0;
+                removed++;
+            }
+        }
+        
+        // 如果还需要移除更多数字（可能因为区域限制导致无法达到目标数量）
+        // 那么随机选择区域再次移除，但是保持游戏可解
+        const remainingToRemove = count - removed;
+        if (remainingToRemove > 0) {
+            this.shuffleArray(positions);
+            for (let i = 0; i < positions.length && removed < count; i++) {
+                const position = positions[i];
+                const row = Math.floor(position / 9);
+                const col = position % 9;
+                
+                if (this.board[row][col] !== 0) {
+                    // 暂存当前值
+                    const temp = this.board[row][col];
+                    // 尝试移除
+                    this.board[row][col] = 0;
+                    removed++;
+                }
+            }
         }
     }
 
